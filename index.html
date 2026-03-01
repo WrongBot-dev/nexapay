@@ -1,0 +1,2187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaPay E-Wallet</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #0ea5e9;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #64748b;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e3a5f 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: linear-gradient(180deg, rgba(30,27,75,0.95) 0%, rgba(15,23,42,0.98) 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .logo i {
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .notification-btn, .settings-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: #fff;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .notification-btn:hover, .settings-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: var(--danger);
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Balance Card */
+        .balance-card {
+            margin: 20px;
+            padding: 30px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(99,102,241,0.3);
+        }
+
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        }
+
+        .balance-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .balance-amount {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .account-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .account-number {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+        }
+
+        .copy-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            padding: 0 20px;
+            margin-bottom: 25px;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 15px 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-3px);
+        }
+
+        .action-btn i {
+            font-size: 1.5rem;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .action-btn.topup i { background: linear-gradient(135deg, #10b981, #059669); }
+        .action-btn.send i { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+        .action-btn.pay i { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .action-btn.loan i { background: linear-gradient(135deg, #ec4899, #be185d); }
+
+        .action-btn span {
+            font-size: 0.75rem;
+            color: var(--gray);
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            margin-bottom: 15px;
+        }
+
+        .section-header h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .see-all {
+            color: var(--primary);
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        /* Transactions */
+        .transactions {
+            padding: 0 20px;
+            margin-bottom: 100px;
+        }
+
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .transaction-item:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .tx-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .tx-icon.income { background: rgba(16,185,129,0.2); color: var(--success); }
+        .tx-icon.expense { background: rgba(239,68,68,0.2); color: var(--danger); }
+        .tx-icon.loan { background: rgba(236,72,153,0.2); color: #ec4899; }
+
+        .tx-details {
+            flex: 1;
+        }
+
+        .tx-title {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .tx-date {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .tx-amount {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .tx-amount.positive { color: var(--success); }
+        .tx-amount.negative { color: var(--danger); }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            width: 100%;
+            max-width: 480px;
+            border-radius: 24px 24px 0 0;
+            padding: 30px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.4rem;
+        }
+
+        .close-modal {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255,255,255,0.08);
+        }
+
+        .form-group input::placeholder {
+            color: var(--gray);
+        }
+
+        .amount-input-wrapper {
+            position: relative;
+        }
+
+        .currency-symbol {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--gray);
+        }
+
+        .amount-input-wrapper input {
+            padding-left: 35px;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .quick-amounts {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .quick-amount {
+            flex: 1;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .quick-amount:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .payment-method {
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .payment-method.selected {
+            border-color: var(--primary);
+            background: rgba(99,102,241,0.1);
+        }
+
+        .payment-method i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .payment-method.bank i { color: var(--secondary); }
+        .payment-method.card i { color: var(--warning); }
+
+        .card-input-group {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            border-radius: 16px;
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(99,102,241,0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loan Section */
+        .loan-info-card {
+            background: linear-gradient(135deg, rgba(236,72,153,0.2) 0%, rgba(190,24,93,0.2) 100%);
+            border: 1px solid rgba(236,72,153,0.3);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .loan-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .loan-stat:last-child {
+            border-bottom: none;
+        }
+
+        .loan-stat-label {
+            color: var(--gray);
+        }
+
+        .loan-stat-value {
+            font-weight: 600;
+        }
+
+        .credit-score {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .score-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--danger), var(--warning), var(--success));
+            border-radius: 4px;
+            transition: width 0.5s;
+        }
+
+        .loan-terms {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .term-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 8px;
+        }
+
+        .term-option:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .term-option.selected {
+            background: rgba(99,102,241,0.2);
+            border: 1px solid var(--primary);
+        }
+
+        .term-option input {
+            display: none;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            background: rgba(15,23,42,0.95);
+            backdrop-filter: blur(20px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-around;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            color: var(--gray);
+            cursor: pointer;
+            transition: all 0.3s;
+            background: none;
+            border: none;
+            font-size: 0.75rem;
+        }
+
+        .nav-item.active, .nav-item:hover {
+            color: var(--primary);
+        }
+
+        .nav-item i {
+            font-size: 1.3rem;
+        }
+
+        /* Success Animation */
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .success-overlay.active {
+            display: flex;
+        }
+
+        .success-content {
+            text-align: center;
+            animation: scaleIn 0.5s ease;
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            background: var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 auto 20px;
+        }
+
+        .success-content h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .success-content p {
+            color: var(--gray);
+            margin-bottom: 30px;
+        }
+
+        .success-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--success);
+            margin-bottom: 30px;
+        }
+
+        /* Verification Badge */
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(16,185,129,0.2);
+            color: var(--success);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+
+        /* PIN Modal */
+        .pin-display {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .pin-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .pin-dot.filled {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .pin-keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            max-width: 280px;
+            margin: 0 auto;
+        }
+
+        .pin-key {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
+        .pin-key:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .pin-key:active {
+            transform: scale(0.95);
+        }
+
+        .pin-key.delete {
+            font-size: 1.2rem;
+        }
+
+        /* Loan Active Card */
+        .active-loan-card {
+            background: linear-gradient(135deg, #831843 0%, #be185d 100%);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .loan-progress {
+            margin: 20px 0;
+        }
+
+        .loan-progress-bar {
+            height: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .loan-progress-fill {
+            height: 100%;
+            background: #fff;
+            border-radius: 5px;
+            transition: width 0.5s;
+        }
+
+        .loan-progress-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        /* Status indicators */
+        .status-pending { color: var(--warning); }
+        .status-approved { color: var(--success); }
+        .status-rejected { color: var(--danger); }
+
+        /* Notification Styles */
+        .notification-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .notification-item:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .notification-item.unread {
+            background: rgba(99,102,241,0.1);
+            border-left: 3px solid var(--primary);
+        }
+
+        .notification-item.unread::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
+
+        .notif-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .notif-icon.welcome { background: rgba(99,102,241,0.2); color: var(--primary); }
+        .notif-icon.promo { background: rgba(16,185,129,0.2); color: var(--success); }
+        .notif-icon.security { background: rgba(239,68,68,0.2); color: var(--danger); }
+        .notif-icon.info { background: rgba(14,165,233,0.2); color: var(--secondary); }
+        .notif-icon.loan { background: rgba(236,72,153,0.2); color: #ec4899; }
+
+        .notif-content {
+            flex: 1;
+        }
+
+        .notif-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 0.95rem;
+        }
+
+        .notif-message {
+            font-size: 0.85rem;
+            color: var(--gray);
+            line-height: 1.4;
+        }
+
+        .notif-time {
+            font-size: 0.75rem;
+            color: var(--gray);
+            margin-top: 6px;
+        }
+
+        .notif-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .notif-action-btn {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+
+        .notif-action-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .notif-action-btn.primary {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-wallet"></i>
+                <span>NexaPay</span>
+            </div>
+            <div class="user-menu">
+                <button class="notification-btn" onclick="openModal('notificationsModal')">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notifBadge" style="display: none;">0</span>
+                </button>
+                <button class="settings-btn" onclick="openModal('settingsModal')">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Balance Card -->
+        <div class="balance-card">
+            <div class="balance-label">Available Balance</div>
+            <div class="balance-amount" id="balanceDisplay">$0.00</div>
+            <div class="account-info">
+                <div>
+                    <div style="font-size: 0.8rem; opacity: 0.8; margin-bottom: 3px;">Account Number</div>
+                    <div class="account-number" id="accountNumber">----</div>
+                </div>
+                <button class="copy-btn" onclick="copyAccountNumber()">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <div class="action-btn topup" onclick="openModal('topupModal')">
+                <i class="fas fa-plus"></i>
+                <span>Top Up</span>
+            </div>
+            <div class="action-btn send" onclick="openModal('sendModal')">
+                <i class="fas fa-paper-plane"></i>
+                <span>Send</span>
+            </div>
+            <div class="action-btn pay" onclick="openModal('payModal')">
+                <i class="fas fa-qrcode"></i>
+                <span>Pay</span>
+            </div>
+            <div class="action-btn loan" onclick="openModal('loanModal')">
+                <i class="fas fa-hand-holding-usd"></i>
+                <span>Loan</span>
+            </div>
+        </div>
+
+        <!-- Transactions -->
+        <div class="section-header">
+            <h3>Recent Transactions</h3>
+            <span class="see-all" onclick="openModal('historyModal')">See All</span>
+        </div>
+
+        <div class="transactions" id="transactionsList">
+            <div class="empty-state">
+                <i class="fas fa-receipt"></i>
+                <p>No transactions yet</p>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </button>
+            <button class="nav-item" onclick="openModal('historyModal')">
+                <i class="fas fa-history"></i>
+                <span>History</span>
+            </button>
+            <button class="nav-item" onclick="openModal('cardsModal')">
+                <i class="fas fa-credit-card"></i>
+                <span>Cards</span>
+            </button>
+            <button class="nav-item" onclick="openModal('profileModal')">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Top Up Modal -->
+    <div class="modal-overlay" id="topupModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Top Up Balance</h2>
+                <button class="close-modal" onclick="closeModal('topupModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label>Amount</label>
+                <div class="amount-input-wrapper">
+                    <span class="currency-symbol">$</span>
+                    <input type="number" id="topupAmount" placeholder="0.00" min="1" step="0.01">
+                </div>
+                <div class="quick-amounts">
+                    <button class="quick-amount" onclick="setTopupAmount(50)">$50</button>
+                    <button class="quick-amount" onclick="setTopupAmount(100)">$100</button>
+                    <button class="quick-amount" onclick="setTopupAmount(250)">$250</button>
+                    <button class="quick-amount" onclick="setTopupAmount(500)">$500</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Payment Method</label>
+                <div class="payment-methods">
+                    <div class="payment-method bank selected" onclick="selectPaymentMethod('bank', this)">
+                        <i class="fas fa-university"></i>
+                        <span>Bank Transfer</span>
+                    </div>
+                    <div class="payment-method card" onclick="selectPaymentMethod('card', this)">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Credit Card</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="bankDetails" class="form-group">
+                <label>Select Bank</label>
+                <select id="bankSelect">
+                    <option value="">Choose your bank</option>
+                    <option value="chase">Chase Bank</option>
+                    <option value="bofa">Bank of America</option>
+                    <option value="wells">Wells Fargo</option>
+                    <option value="citi">Citibank</option>
+                    <option value="usbank">US Bank</option>
+                    <option value="pnc">PNC Bank</option>
+                    <option value="capital">Capital One</option>
+                </select>
+            </div>
+
+            <div id="cardDetails" style="display: none;">
+                <div class="form-group">
+                    <label>Card Number</label>
+                    <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCardNumber(this)">
+                </div>
+                <div class="card-input-group">
+                    <div class="form-group">
+                        <label>Expiry</label>
+                        <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5" oninput="formatExpiry(this)">
+                    </div>
+                    <div class="form-group">
+                        <label>CVV</label>
+                        <input type="password" id="cardCvv" placeholder="***" maxlength="4">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Cardholder Name</label>
+                    <input type="text" id="cardName" placeholder="John Doe">
+                </div>
+            </div>
+
+            <button class="submit-btn" onclick="processTopup()">
+                <i class="fas fa-lock"></i> Secure Top Up
+            </button>
+        </div>
+    </div>
+
+    <!-- Send Money Modal -->
+    <div class="modal-overlay" id="sendModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Send Money</h2>
+                <button class="close-modal" onclick="closeModal('sendModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label>Recipient Account Number</label>
+                <input type="text" id="recipientAccount" placeholder="Enter 12-digit account code" maxlength="14" oninput="formatAccountInput(this)">
+            </div>
+
+            <div class="form-group">
+                <label>Amount</label>
+                <div class="amount-input-wrapper">
+                    <span class="currency-symbol">$</span>
+                    <input type="number" id="sendAmount" placeholder="0.00" min="1" step="0.01">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Note (Optional)</label>
+                <input type="text" id="sendNote" placeholder="What's this for?">
+            </div>
+
+            <button class="submit-btn" onclick="openPinModal('send')">
+                <i class="fas fa-paper-plane"></i> Send Money
+            </button>
+        </div>
+    </div>
+
+    <!-- Pay Modal -->
+    <div class="modal-overlay" id="payModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Pay by Account</h2>
+                <button class="close-modal" onclick="closeModal('payModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label>Merchant Account Number</label>
+                <input type="text" id="merchantAccount" placeholder="Enter 12-digit merchant code" maxlength="14" oninput="formatAccountInput(this)">
+            </div>
+
+            <div class="form-group">
+                <label>Amount</label>
+                <div class="amount-input-wrapper">
+                    <span class="currency-symbol">$</span>
+                    <input type="number" id="payAmount" placeholder="0.00" min="0.01" step="0.01">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Reference (Optional)</label>
+                <input type="text" id="payReference" placeholder="Invoice or order number">
+            </div>
+
+            <button class="submit-btn" onclick="openPinModal('pay')">
+                <i class="fas fa-check-circle"></i> Confirm Payment
+            </button>
+        </div>
+    </div>
+
+    <!-- Loan Modal -->
+    <div class="modal-overlay" id="loanModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Quick Loan</h2>
+                <button class="close-modal" onclick="closeModal('loanModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div id="activeLoanSection" style="display: none;">
+                <div class="active-loan-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="opacity: 0.8;">Active Loan</span>
+                        <span class="verified-badge"><i class="fas fa-check"></i> Approved</span>
+                    </div>
+                    <div style="font-size: 2rem; font-weight: 700; margin: 15px 0;" id="activeLoanAmount">$0.00</div>
+                    <div class="loan-progress">
+                        <div class="loan-progress-bar">
+                            <div class="loan-progress-fill" id="loanProgressFill" style="width: 0%;"></div>
+                        </div>
+                        <div class="loan-progress-labels">
+                            <span id="loanPaidLabel">$0 paid</span>
+                            <span id="loanRemainingLabel">$0 remaining</span>
+                        </div>
+                    </div>
+                    <button class="submit-btn" style="background: #fff; color: #831843;" onclick="openPinModal('repay')">
+                        Make Payment
+                    </button>
+                </div>
+            </div>
+
+            <div id="newLoanSection">
+                <div class="loan-info-card">
+                    <div class="loan-stat">
+                        <span class="loan-stat-label">Credit Score</span>
+                        <div class="credit-score">
+                            <span class="loan-stat-value" id="creditScoreDisplay">750</span>
+                            <div class="score-bar">
+                                <div class="score-fill" id="creditScoreFill" style="width: 75%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="loan-stat">
+                        <span class="loan-stat-label">Max Eligible Amount</span>
+                        <span class="loan-stat-value" id="maxLoanDisplay">$5,000</span>
+                    </div>
+                    <div class="loan-stat">
+                        <span class="loan-stat-label">Interest Rate</span>
+                        <span class="loan-stat-value">5.9% APR</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Loan Amount</label>
+                    <div class="amount-input-wrapper">
+                        <span class="currency-symbol">$</span>
+                        <input type="number" id="loanAmount" placeholder="0.00" min="100" max="5000" step="50">
+                    </div>
+                    <div class="quick-amounts">
+                        <button class="quick-amount" onclick="setLoanAmount(500)">$500</button>
+                        <button class="quick-amount" onclick="setLoanAmount(1000)">$1,000</button>
+                        <button class="quick-amount" onclick="setLoanAmount(2500)">$2,500</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Repayment Term</label>
+                    <div class="loan-terms" id="loanTerms">
+                        <div class="term-option selected" onclick="selectTerm(3, this)">
+                            <div>
+                                <strong>3 Months</strong>
+                                <div style="font-size: 0.85rem; color: var(--gray);">Lower interest</div>
+                            </div>
+                            <div id="term3Monthly">$0/mo</div>
+                        </div>
+                        <div class="term-option" onclick="selectTerm(6, this)">
+                            <div>
+                                <strong>6 Months</strong>
+                                <div style="font-size: 0.85rem; color: var(--gray);">Balanced</div>
+                            </div>
+                            <div id="term6Monthly">$0/mo</div>
+                        </div>
+                        <div class="term-option" onclick="selectTerm(12, this)">
+                            <div>
+                                <strong>12 Months</strong>
+                                <div style="font-size: 0.85rem; color: var(--gray);">Lower payments</div>
+                            </div>
+                            <div id="term12Monthly">$0/mo</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: var(--gray);">Principal</span>
+                        <span id="loanPrincipal">$0.00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: var(--gray);">Interest</span>
+                        <span id="loanInterest">$0.00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.1rem; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <span>Total Repayment</span>
+                        <span id="loanTotal">$0.00</span>
+                    </div>
+                </div>
+
+                <button class="submit-btn" onclick="applyForLoan()">
+                    <i class="fas fa-file-signature"></i> Apply for Loan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PIN Modal -->
+    <div class="modal-overlay" id="pinModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Enter PIN</h2>
+                <button class="close-modal" onclick="closeModal('pinModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <p style="text-align: center; color: var(--gray); margin-bottom: 10px;">Enter your 4-digit security PIN</p>
+
+            <div class="pin-display">
+                <div class="pin-dot" id="pin1"></div>
+                <div class="pin-dot" id="pin2"></div>
+                <div class="pin-dot" id="pin3"></div>
+                <div class="pin-dot" id="pin4"></div>
+            </div>
+
+            <div class="pin-keypad">
+                <button class="pin-key" onclick="enterPin('1')">1</button>
+                <button class="pin-key" onclick="enterPin('2')">2</button>
+                <button class="pin-key" onclick="enterPin('3')">3</button>
+                <button class="pin-key" onclick="enterPin('4')">4</button>
+                <button class="pin-key" onclick="enterPin('5')">5</button>
+                <button class="pin-key" onclick="enterPin('6')">6</button>
+                <button class="pin-key" onclick="enterPin('7')">7</button>
+                <button class="pin-key" onclick="enterPin('8')">8</button>
+                <button class="pin-key" onclick="enterPin('9')">9</button>
+                <button class="pin-key" style="visibility: hidden;"></button>
+                <button class="pin-key" onclick="enterPin('0')">0</button>
+                <button class="pin-key delete" onclick="deletePin()"><i class="fas fa-backspace"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div class="modal-overlay" id="historyModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Transaction History</h2>
+                <button class="close-modal" onclick="closeModal('historyModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div id="fullTransactionHistory">
+                <div class="empty-state">
+                    <i class="fas fa-receipt"></i>
+                    <p>No transactions yet</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards Modal -->
+    <div class="modal-overlay" id="cardsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>My Cards</h2>
+                <button class="close-modal" onclick="closeModal('cardsModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div id="savedCards">
+                <div class="empty-state">
+                    <i class="fas fa-credit-card"></i>
+                    <p>No cards saved</p>
+                    <button class="submit-btn" style="margin-top: 20px;" onclick="closeModal('cardsModal'); openModal('topupModal'); selectPaymentMethod('card', document.querySelector('.payment-method.card'));">
+                        <i class="fas fa-plus"></i> Add Card
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>My Profile</h2>
+                <button class="close-modal" onclick="closeModal('profileModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 30px;">
+                <div style="width: 80px; height: 80px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 2rem;">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h3 id="profileName">NexaPay User</h3>
+                <span class="verified-badge"><i class="fas fa-check"></i> Verified</span>
+            </div>
+
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="userName" value="NexaPay User">
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="userEmail" value="user@example.com">
+            </div>
+
+            <div class="form-group">
+                <label>Phone</label>
+                <input type="tel" id="userPhone" value="+1 (555) 123-4567">
+            </div>
+
+            <button class="submit-btn" onclick="saveProfile()">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+
+            <button class="submit-btn" style="background: rgba(239,68,68,0.2); color: var(--danger); margin-top: 10px;" onclick="resetWallet()">
+                <i class="fas fa-redo"></i> Reset Wallet
+            </button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button class="close-modal" onclick="closeModal('settingsModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label>Change PIN</label>
+                <input type="password" id="newPin" placeholder="Enter new 4-digit PIN" maxlength="4">
+            </div>
+
+            <div class="form-group">
+                <label>Confirm PIN</label>
+                <input type="password" id="confirmPin" placeholder="Confirm new PIN" maxlength="4">
+            </div>
+
+            <button class="submit-btn" onclick="changePin()">
+                <i class="fas fa-key"></i> Update PIN
+            </button>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div class="modal-overlay" id="notificationsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Notifications</h2>
+                <button class="close-modal" onclick="closeModal('notificationsModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="notif-actions">
+                <button class="notif-action-btn primary" onclick="markAllAsRead()">
+                    <i class="fas fa-check-double"></i> Mark All Read
+                </button>
+                <button class="notif-action-btn" onclick="clearAllNotifications()">
+                    <i class="fas fa-trash"></i> Clear All
+                </button>
+            </div>
+
+            <div id="notificationsList">
+                <div class="empty-state">
+                    <i class="fas fa-bell-slash"></i>
+                    <p>No notifications</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Overlay -->
+    <div class="success-overlay" id="successOverlay">
+        <div class="success-content">
+            <div class="success-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <h2 id="successTitle">Success!</h2>
+            <p id="successMessage">Transaction completed successfully</p>
+            <div class="success-amount" id="successAmount">$0.00</div>
+            <button class="submit-btn" onclick="closeSuccess()">Done</button>
+        </div>
+    </div>
+
+    <script>
+        // Wallet State
+        let wallet = {
+            balance: 0,
+            accountNumber: '',
+            transactions: [],
+            activeLoan: null,
+            creditScore: 750,
+            maxLoan: 5000,
+            pin: '1234',
+            cards: [],
+            notifications: [],
+            profile: {
+                name: 'NexaPay User',
+                email: 'user@example.com',
+                phone: '+1 (555) 123-4567'
+            }
+        };
+
+        let currentPinAction = '';
+        let enteredPin = '';
+        let selectedPaymentMethod = 'bank';
+        let selectedLoanTerm = 3;
+
+        // Initialize
+        function init() {
+            const saved = localStorage.getItem('nexapay_wallet');
+            if (saved) {
+                wallet = JSON.parse(saved);
+            } else {
+                wallet.accountNumber = generateAccountNumber();
+            }
+            initializeNotifications();
+            updateUI();
+            updateNotificationsList();
+            updateNotificationsBadge();
+        }
+
+        function saveWallet() {
+            localStorage.setItem('nexapay_wallet', JSON.stringify(wallet));
+        }
+
+        function generateAccountNumber() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < 12; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        function formatMoney(amount) {
+            return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function updateUI() {
+            document.getElementById('balanceDisplay').textContent = formatMoney(wallet.balance);
+            document.getElementById('accountNumber').textContent = wallet.accountNumber.match(/.{1,4}/g).join(' ');
+            document.getElementById('creditScoreDisplay').textContent = wallet.creditScore;
+            document.getElementById('creditScoreFill').style.width = ((wallet.creditScore - 300) / 550 * 100) + '%';
+            document.getElementById('maxLoanDisplay').textContent = formatMoney(wallet.maxLoan);
+
+            // Update profile
+            document.getElementById('profileName').textContent = wallet.profile.name;
+            document.getElementById('userName').value = wallet.profile.name;
+            document.getElementById('userEmail').value = wallet.profile.email;
+            document.getElementById('userPhone').value = wallet.profile.phone;
+
+            // Update transactions
+            updateTransactionsList();
+
+            // Update loan section
+            updateLoanSection();
+
+            // Update cards
+            updateCardsSection();
+
+            saveWallet();
+        }
+
+        function updateTransactionsList() {
+            const list = document.getElementById('transactionsList');
+            const fullHistory = document.getElementById('fullTransactionHistory');
+
+            if (wallet.transactions.length === 0) {
+                list.innerHTML = '<div class="empty-state"><i class="fas fa-receipt"></i><p>No transactions yet</p></div>';
+                fullHistory.innerHTML = '<div class="empty-state"><i class="fas fa-receipt"></i><p>No transactions yet</p></div>';
+                return;
+            }
+
+            const recentTx = wallet.transactions.slice(-5).reverse();
+            list.innerHTML = recentTx.map(tx => createTransactionHTML(tx)).join('');
+            fullHistory.innerHTML = wallet.transactions.slice().reverse().map(tx => createTransactionHTML(tx)).join('');
+        }
+
+        function createTransactionHTML(tx) {
+            const isIncome = tx.type === 'topup' || tx.type === 'received' || tx.type === 'loan';
+            const iconClass = tx.type === 'loan' ? 'loan' : (isIncome ? 'income' : 'expense');
+            const icons = {
+                topup: 'fa-plus',
+                sent: 'fa-paper-plane',
+                received: 'fa-arrow-down',
+                payment: 'fa-store',
+                loan: 'fa-hand-holding-usd',
+                repayment: 'fa-undo'
+            };
+
+            return `
+                <div class="transaction-item">
+                    <div class="tx-icon ${iconClass}">
+                        <i class="fas ${icons[tx.type] || 'fa-exchange-alt'}"></i>
+                    </div>
+                    <div class="tx-details">
+                        <div class="tx-title">${tx.title}</div>
+                        <div class="tx-date">${tx.date}</div>
+                    </div>
+                    <div class="tx-amount ${isIncome ? 'positive' : 'negative'}">
+                        ${isIncome ? '+' : '-'}${formatMoney(Math.abs(tx.amount))}
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateLoanSection() {
+            const activeSection = document.getElementById('activeLoanSection');
+            const newSection = document.getElementById('newLoanSection');
+
+            if (wallet.activeLoan) {
+                activeSection.style.display = 'block';
+                newSection.style.display = 'none';
+
+                const remaining = wallet.activeLoan.total - wallet.activeLoan.paid;
+                const progress = (wallet.activeLoan.paid / wallet.activeLoan.total) * 100;
+
+                document.getElementById('activeLoanAmount').textContent = formatMoney(remaining);
+                document.getElementById('loanProgressFill').style.width = progress + '%';
+                document.getElementById('loanPaidLabel').textContent = formatMoney(wallet.activeLoan.paid) + ' paid';
+                document.getElementById('loanRemainingLabel').textContent = formatMoney(remaining) + ' remaining';
+            } else {
+                activeSection.style.display = 'none';
+                newSection.style.display = 'block';
+            }
+        }
+
+        function updateCardsSection() {
+            const container = document.getElementById('savedCards');
+
+            if (wallet.cards.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-credit-card"></i>
+                        <p>No cards saved</p>
+                        <button class="submit-btn" style="margin-top: 20px;" onclick="closeModal('cardsModal'); openModal('topupModal'); selectPaymentMethod('card', document.querySelector('.payment-method.card'));">
+                            <i class="fas fa-plus"></i> Add Card
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = wallet.cards.map((card, index) => `
+                <div class="transaction-item" style="cursor: default;">
+                    <div class="tx-icon" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <div class="tx-details">
+                        <div class="tx-title">${card.name}</div>
+                        <div class="tx-date">**** **** **** ${card.last4}</div>
+                    </div>
+                    <button onclick="removeCard(${index})" style="background: none; border: none; color: var(--danger); cursor: pointer;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function removeCard(index) {
+            wallet.cards.splice(index, 1);
+            updateUI();
+        }
+
+        // Modal Functions
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+            if (id === 'pinModal') {
+                resetPin();
+            }
+        }
+
+        // Copy Account Number
+        function copyAccountNumber() {
+            navigator.clipboard.writeText(wallet.accountNumber);
+            showToast('Account number copied!');
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 100px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: var(--dark);
+                color: #fff;
+                padding: 12px 24px;
+                border-radius: 30px;
+                z-index: 3000;
+                animation: fadeInUp 0.3s ease;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+
+        // Top Up Functions
+        function setTopupAmount(amount) {
+            document.getElementById('topupAmount').value = amount;
+        }
+
+        function selectPaymentMethod(method, element) {
+            selectedPaymentMethod = method;
+            document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+
+            document.getElementById('bankDetails').style.display = method === 'bank' ? 'block' : 'none';
+            document.getElementById('cardDetails').style.display = method === 'card' ? 'block' : 'none';
+        }
+
+        function formatCardNumber(input) {
+            let value = input.value.replace(/\D/g, '');
+            value = value.match(/.{1,4}/g)?.join(' ') || value;
+            input.value = value;
+        }
+
+        function formatExpiry(input) {
+            let value = input.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2);
+            }
+            input.value = value;
+        }
+
+        function formatAccountInput(input) {
+            let value = input.value.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+            value = value.match(/.{1,4}/g)?.join(' ') || value;
+            input.value = value;
+        }
+
+        function processTopup() {
+            const amount = parseFloat(document.getElementById('topupAmount').value);
+
+            if (!amount || amount <= 0) {
+                showToast('Please enter a valid amount');
+                return;
+            }
+
+            if (selectedPaymentMethod === 'bank') {
+                const bank = document.getElementById('bankSelect').value;
+                if (!bank) {
+                    showToast('Please select a bank');
+                    return;
+                }
+            } else {
+                const cardNum = document.getElementById('cardNumber').value.replace(/\s/g, '');
+                const expiry = document.getElementById('cardExpiry').value;
+                const cvv = document.getElementById('cardCvv').value;
+                const name = document.getElementById('cardName').value;
+
+                if (cardNum.length < 16 || !expiry || !cvv || !name) {
+                    showToast('Please fill in all card details');
+                    return;
+                }
+
+                // Save card
+                const existingCard = wallet.cards.find(c => c.last4 === cardNum.slice(-4));
+                if (!existingCard) {
+                    wallet.cards.push({
+                        last4: cardNum.slice(-4),
+                        name: name,
+                        expiry: expiry
+                    });
+                }
+            }
+
+            wallet.balance += amount;
+            wallet.transactions.push({
+                type: 'topup',
+                title: selectedPaymentMethod === 'bank' ? 'Bank Transfer Top Up' : 'Card Top Up',
+                amount: amount,
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+            });
+
+            // Improve credit score slightly
+            wallet.creditScore = Math.min(850, wallet.creditScore + 1);
+            wallet.maxLoan = Math.min(50000, wallet.maxLoan + amount * 0.1);
+
+            closeModal('topupModal');
+            showSuccess('Top Up Successful', 'Funds added to your wallet', amount);
+            addNotification('info', 'fa-arrow-down', 'Top Up Received', `${formatMoney(amount)} has been added to your wallet.`);
+            updateUI();
+
+            // Clear form
+            document.getElementById('topupAmount').value = '';
+            document.getElementById('cardNumber').value = '';
+            document.getElementById('cardExpiry').value = '';
+            document.getElementById('cardCvv').value = '';
+            document.getElementById('cardName').value = '';
+        }
+
+        // PIN Functions
+        function openPinModal(action) {
+            currentPinAction = action;
+            openModal('pinModal');
+        }
+
+        function enterPin(digit) {
+            if (enteredPin.length < 4) {
+                enteredPin += digit;
+                updatePinDots();
+
+                if (enteredPin.length === 4) {
+                    setTimeout(verifyPin, 300);
+                }
+            }
+        }
+
+        function deletePin() {
+            enteredPin = enteredPin.slice(0, -1);
+            updatePinDots();
+        }
+
+        function resetPin() {
+            enteredPin = '';
+            updatePinDots();
+        }
+
+        function updatePinDots() {
+            for (let i = 1; i <= 4; i++) {
+                const dot = document.getElementById('pin' + i);
+                dot.classList.toggle('filled', i <= enteredPin.length);
+            }
+        }
+
+        function verifyPin() {
+            if (enteredPin === wallet.pin) {
+                closeModal('pinModal');
+
+                switch (currentPinAction) {
+                    case 'send':
+                        processSend();
+                        break;
+                    case 'pay':
+                        processPay();
+                        break;
+                    case 'repay':
+                        processRepayment();
+                        break;
+                }
+            } else {
+                showToast('Incorrect PIN');
+                resetPin();
+            }
+        }
+
+        // Send Money
+        function processSend() {
+            const recipient = document.getElementById('recipientAccount').value.replace(/\s/g, '');
+            const amount = parseFloat(document.getElementById('sendAmount').value);
+            const note = document.getElementById('sendNote').value;
+
+            if (!recipient || recipient.length !== 12) {
+                showToast('Please enter a valid 12-digit account number');
+                return;
+            }
+
+            if (!amount || amount <= 0) {
+                showToast('Please enter a valid amount');
+                return;
+            }
+
+            if (amount > wallet.balance) {
+                showToast('Insufficient balance');
+                return;
+            }
+
+            wallet.balance -= amount;
+            wallet.transactions.push({
+                type: 'sent',
+                title: note ? `To ${recipient.substring(0,4)}... - ${note}` : `To ${recipient.substring(0,4)}...${recipient.slice(-4)}`,
+                amount: amount,
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+            });
+
+            closeModal('sendModal');
+            showSuccess('Money Sent', `To account ${recipient.substring(0,4)}...${recipient.slice(-4)}`, amount);
+            updateUI();
+
+            // Clear form
+            document.getElementById('recipientAccount').value = '';
+            document.getElementById('sendAmount').value = '';
+            document.getElementById('sendNote').value = '';
+        }
+
+        // Pay
+        function processPay() {
+            const merchant = document.getElementById('merchantAccount').value.replace(/\s/g, '');
+            const amount = parseFloat(document.getElementById('payAmount').value);
+            const reference = document.getElementById('payReference').value;
+
+            if (!merchant || merchant.length !== 12) {
+                showToast('Please enter a valid merchant code');
+                return;
+            }
+
+            if (!amount || amount <= 0) {
+                showToast('Please enter a valid amount');
+                return;
+            }
+
+            if (amount > wallet.balance) {
+                showToast('Insufficient balance');
+                return;
+            }
+
+            wallet.balance -= amount;
+            wallet.transactions.push({
+                type: 'payment',
+                title: reference ? `Payment - ${reference}` : `Payment to ${merchant.substring(0,4)}...`,
+                amount: amount,
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+            });
+
+            // Improve credit score
+            wallet.creditScore = Math.min(850, wallet.creditScore + 2);
+
+            closeModal('payModal');
+            showSuccess('Payment Successful', reference || 'Transaction completed', amount);
+            updateUI();
+
+            // Clear form
+            document.getElementById('merchantAccount').value = '';
+            document.getElementById('payAmount').value = '';
+            document.getElementById('payReference').value = '';
+        }
+
+        // Loan Functions
+        function setLoanAmount(amount) {
+            document.getElementById('loanAmount').value = amount;
+            calculateLoan();
+        }
+
+        function selectTerm(months, element) {
+            selectedLoanTerm = months;
+            document.querySelectorAll('.term-option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            calculateLoan();
+        }
+
+        function calculateLoan() {
+            const principal = parseFloat(document.getElementById('loanAmount').value) || 0;
+            const rate = 0.059; // 5.9% APR
+            const monthlyRate = rate / 12;
+
+            [3, 6, 12].forEach(term => {
+                const interest = principal * rate * (term / 12);
+                const total = principal + interest;
+                const monthly = total / term;
+                document.getElementById(`term${term}Monthly`).textContent = formatMoney(monthly) + '/mo';
+            });
+
+            const interest = principal * rate * (selectedLoanTerm / 12);
+            const total = principal + interest;
+
+            document.getElementById('loanPrincipal').textContent = formatMoney(principal);
+            document.getElementById('loanInterest').textContent = formatMoney(interest);
+            document.getElementById('loanTotal').textContent = formatMoney(total);
+        }
+
+        function applyForLoan() {
+            if (wallet.activeLoan) {
+                showToast('You already have an active loan');
+                return;
+            }
+
+            const amount = parseFloat(document.getElementById('loanAmount').value);
+
+            if (!amount || amount < 100) {
+                showToast('Minimum loan amount is $100');
+                return;
+            }
+
+            if (amount > wallet.maxLoan) {
+                showToast(`Maximum eligible amount is ${formatMoney(wallet.maxLoan)}`);
+                return;
+            }
+
+            const rate = 0.059;
+            const interest = amount * rate * (selectedLoanTerm / 12);
+            const total = amount + interest;
+
+            wallet.activeLoan = {
+                principal: amount,
+                interest: interest,
+                total: total,
+                paid: 0,
+                term: selectedLoanTerm,
+                monthlyPayment: total / selectedLoanTerm,
+                startDate: new Date().toISOString()
+            };
+
+            wallet.balance += amount;
+            wallet.transactions.push({
+                type: 'loan',
+                title: `Loan Disbursement (${selectedLoanTerm} months)`,
+                amount: amount,
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+            });
+
+            closeModal('loanModal');
+            showSuccess('Loan Approved!', `${selectedLoanTerm}-month loan at 5.9% APR`, amount);
+            addNotification('loan', 'fa-hand-holding-usd', 'Loan Approved!', `Your ${formatMoney(amount)} loan has been approved. Monthly payment: ${formatMoney(total / selectedLoanTerm)}`);
+            updateUI();
+
+            document.getElementById('loanAmount').value = '';
+        }
+
+        function processRepayment() {
+            if (!wallet.activeLoan) return;
+
+            const remaining = wallet.activeLoan.total - wallet.activeLoan.paid;
+            const payment = Math.min(wallet.activeLoan.monthlyPayment, remaining);
+
+            if (payment > wallet.balance) {
+                showToast('Insufficient balance for repayment');
+                return;
+            }
+
+            wallet.balance -= payment;
+            wallet.activeLoan.paid += payment;
+
+            wallet.transactions.push({
+                type: 'repayment',
+                title: 'Loan Repayment',
+                amount: payment,
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+            });
+
+            // Improve credit score on repayment
+            wallet.creditScore = Math.min(850, wallet.creditScore + 5);
+            wallet.maxLoan = Math.min(50000, wallet.maxLoan * 1.05);
+
+            if (wallet.activeLoan.paid >= wallet.activeLoan.total) {
+                wallet.activeLoan = null;
+                showSuccess('Loan Paid Off!', 'Congratulations! Your loan is fully repaid.', payment);
+            } else {
+                showSuccess('Payment Made', 'Loan repayment processed', payment);
+            }
+
+            updateUI();
+        }
+
+        // Success Overlay
+        function showSuccess(title, message, amount) {
+            document.getElementById('successTitle').textContent = title;
+            document.getElementById('successMessage').textContent = message;
+            document.getElementById('successAmount').textContent = formatMoney(amount);
+            document.getElementById('successOverlay').classList.add('active');
+        }
+
+        function closeSuccess() {
+            document.getElementById('successOverlay').classList.remove('active');
+        }
+
+        // Profile
+        function saveProfile() {
+            wallet.profile.name = document.getElementById('userName').value;
+            wallet.profile.email = document.getElementById('userEmail').value;
+            wallet.profile.phone = document.getElementById('userPhone').value;
+            updateUI();
+            closeModal('profileModal');
+            showToast('Profile updated');
+        }
+
+        function changePin() {
+            const newPin = document.getElementById('newPin').value;
+            const confirmPin = document.getElementById('confirmPin').value;
+
+            if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+                showToast('PIN must be 4 digits');
+                return;
+            }
+
+            if (newPin !== confirmPin) {
+                showToast('PINs do not match');
+                return;
+            }
+
+            wallet.pin = newPin;
+            saveWallet();
+            closeModal('settingsModal');
+            showToast('PIN updated successfully');
+
+            document.getElementById('newPin').value = '';
+            document.getElementById('confirmPin').value = '';
+        }
+
+        function resetWallet() {
+            if (confirm('Are you sure you want to reset your wallet? This will delete all data.')) {
+                localStorage.removeItem('nexapay_wallet');
+                wallet = {
+                    balance: 0,
+                    accountNumber: generateAccountNumber(),
+                    transactions: [],
+                    activeLoan: null,
+                    creditScore: 750,
+                    maxLoan: 5000,
+                    pin: '1234',
+                    cards: [],
+                    notifications: [],
+                    profile: {
+                        name: 'NexaPay User',
+                        email: 'user@example.com',
+                        phone: '+1 (555) 123-4567'
+                    }
+                };
+                initializeNotifications();
+                updateUI();
+                closeModal('profileModal');
+                showToast('Wallet reset complete');
+            }
+        }
+
+        // Notification Functions
+        function initializeNotifications() {
+            if (!wallet.notifications || wallet.notifications.length === 0) {
+                wallet.notifications = [
+                    {
+                        id: 1,
+                        type: 'welcome',
+                        icon: 'fa-gift',
+                        title: 'Welcome to NexaPay!',
+                        message: 'Your account is ready. Top up now to start sending money, making payments, and more.',
+                        time: 'Just now',
+                        read: false
+                    },
+                    {
+                        id: 2,
+                        type: 'promo',
+                        icon: 'fa-percent',
+                        title: 'Special Offer: 0% Fee Top-Up',
+                        message: 'Top up $100 or more this week and enjoy zero transaction fees!',
+                        time: '2 hours ago',
+                        read: false
+                    },
+                    {
+                        id: 3,
+                        type: 'security',
+                        icon: 'fa-shield-alt',
+                        title: 'Security Reminder',
+                        message: 'Keep your PIN safe and never share it with anyone. You can change it anytime in Settings.',
+                        time: '1 day ago',
+                        read: false
+                    }
+                ];
+                saveWallet();
+            }
+        }
+
+        function updateNotificationsBadge() {
+            const unreadCount = wallet.notifications.filter(n => !n.read).length;
+            const badge = document.getElementById('notifBadge');
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function updateNotificationsList() {
+            const container = document.getElementById('notificationsList');
+
+            if (!wallet.notifications || wallet.notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-bell-slash"></i>
+                        <p>No notifications</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = wallet.notifications.map(notif => `
+                <div class="notification-item ${notif.read ? '' : 'unread'}" onclick="markAsRead(${notif.id})">
+                    <div class="notif-icon ${notif.type}">
+                        <i class="fas ${notif.icon}"></i>
+                    </div>
+                    <div class="notif-content">
+                        <div class="notif-title">${notif.title}</div>
+                        <div class="notif-message">${notif.message}</div>
+                        <div class="notif-time"><i class="fas fa-clock"></i> ${notif.time}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function markAsRead(id) {
+            const notif = wallet.notifications.find(n => n.id === id);
+            if (notif) {
+                notif.read = true;
+                saveWallet();
+                updateNotificationsList();
+                updateNotificationsBadge();
+            }
+        }
+
+        function markAllAsRead() {
+            wallet.notifications.forEach(n => n.read = true);
+            saveWallet();
+            updateNotificationsList();
+            updateNotificationsBadge();
+            showToast('All notifications marked as read');
+        }
+
+        function clearAllNotifications() {
+            wallet.notifications = [];
+            saveWallet();
+            updateNotificationsList();
+            updateNotificationsBadge();
+            closeModal('notificationsModal');
+            showToast('All notifications cleared');
+        }
+
+        function addNotification(type, icon, title, message) {
+            const newNotif = {
+                id: Date.now(),
+                type: type,
+                icon: icon,
+                title: title,
+                message: message,
+                time: 'Just now',
+                read: false
+            };
+            wallet.notifications.unshift(newNotif);
+            saveWallet();
+            updateNotificationsBadge();
+        }
+
+        // Loan amount input listener
+        document.getElementById('loanAmount').addEventListener('input', calculateLoan);
+
+        // Close modal on outside click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.classList.remove('active');
+                    if (overlay.id === 'pinModal') resetPin();
+                }
+            });
+        });
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>
